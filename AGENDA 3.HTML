@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agenda de Turnos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+            color: #333;
+            text-align: center;
+        }
+        h1 {
+            background-color: #007bff;
+            color: white;
+            padding: 20px;
+        }
+        .container {
+            margin: 20px auto;
+            max-width: 600px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        label {
+            display: block;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        input, textarea, button {
+            width: 100%;
+            margin-top: 5px;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .turnos-list {
+            margin-top: 20px;
+        }
+        .turno-item {
+            background: #f9f9f9;
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <h1>Agenda de Turnos</h1>
+    <div class="container">
+        <h2>Registrar Turno</h2>
+        <label for="nombre">Nombre:</label>
+        <input type="text" id="nombre" placeholder="Ingresa tu nombre">
+
+        <label for="fecha">Fecha:</label>
+        <input type="date" id="fecha">
+
+        <label for="hora">Hora:</label>
+        <input type="time" id="hora">
+
+        <label for="descripcion">Descripción:</label>
+        <textarea id="descripcion" placeholder="Ingresa una descripción"></textarea>
+
+        <button id="registrar-btn">Registrar Turno</button>
+
+        <div class="turnos-list">
+            <h2>Turnos Registrados</h2>
+            <div id="turnos"></div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const turnos = [];
+
+            const formElements = {
+                nombre: document.getElementById('nombre'),
+                fecha: document.getElementById('fecha'),
+                hora: document.getElementById('hora'),
+                descripcion: document.getElementById('descripcion'),
+            };
+
+            const turnosContainer = document.getElementById('turnos');
+            const registrarBtn = document.getElementById('registrar-btn');
+
+            registrarBtn.addEventListener('click', () => {
+                const turno = obtenerDatosFormulario();
+                if (!turno) return;
+                
+                turno.id = turnos.length + 1;
+                turnos.push(turno);
+                actualizarTurnosUI();
+                limpiarFormulario();
+            });
+
+            turnosContainer.addEventListener('click', (e) => {
+                if (e.target.tagName === 'BUTTON' && e.target.dataset.id) {
+                    enviarRecordatorio(parseInt(e.target.dataset.id));
+                }
+            });
+
+            function obtenerDatosFormulario() {
+                const { nombre, fecha, hora, descripcion } = formElements;
+                if (!nombre.value || !fecha.value || !hora.value || !descripcion.value) {
+                    alert('Por favor, completa todos los campos.');
+                    return null;
+                }
+                return {
+                    nombre: nombre.value,
+                    fecha: fecha.value,
+                    hora: hora.value,
+                    descripcion: descripcion.value,
+                };
+            }
+
+            function actualizarTurnosUI() {
+                turnosContainer.innerHTML = '';
+                turnos.forEach(turno => {
+                    const turnoItem = document.createElement('div');
+                    turnoItem.className = 'turno-item';
+                    turnoItem.innerHTML = `
+                        <p><strong>Nombre:</strong> ${turno.nombre}</p>
+                        <p><strong>Fecha:</strong> ${turno.fecha}</p>
+                        <p><strong>Hora:</strong> ${turno.hora}</p>
+                        <p><strong>Descripción:</strong> ${turno.descripcion}</p>
+                        <button data-id="${turno.id}">Enviar Recordatorio</button>
+                    `;
+                    turnosContainer.appendChild(turnoItem);
+                });
+            }
+
+            function enviarRecordatorio(id) {
+                const turno = turnos.find(t => t.id === id);
+                if (!turno) {
+                    alert('Turno no encontrado.');
+                    return;
+                }
+
+                const mensaje = `Hola ${turno.nombre}, este es un recordatorio de tu turno:\nFecha: ${turno.fecha}\nHora: ${turno.hora}\nDescripción: ${turno.descripcion}`;
+                const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(mensaje)}`;
+
+                window.open(whatsappUrl, '_blank');
+            }
+
+            function limpiarFormulario() {
+                Object.values(formElements).forEach(input => input.value = '');
+            }
+        });
+    </script>
+</body>
+</html>
